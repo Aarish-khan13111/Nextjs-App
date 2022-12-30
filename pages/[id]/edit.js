@@ -3,10 +3,13 @@ import { MDBBtn, MDBInput } from "mdb-react-ui-kit";
 import Router, { useRouter } from "next/router";
 import React, { useState } from "react";
 
-const addNewHero = () => {
+const EditHero = ({ heros }) => {
+  const router = useRouter();
+  const heroId = router.query.id;
+
   const [form, setForm] = useState({
-    superHero: "",
-    realName: "",
+    superHero: heros.superHero,
+    realName: heros.realName,
   });
   const handleChange = (e) => {
     setForm({
@@ -17,8 +20,8 @@ const addNewHero = () => {
   const handleForm = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios("http://localhost:3000/api/hero", {
-        method: "POST",
+      const res = await axios(`http://localhost:3000/api/hero/${heroId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -41,6 +44,7 @@ const addNewHero = () => {
           label="SuperHero"
           type="text"
           name="superHero"
+          value={form.superHero}
         />
         <MDBInput
           className="my-3"
@@ -48,11 +52,22 @@ const addNewHero = () => {
           label="realName"
           type="text"
           name="realName"
+          value={form.realName}
         />
-        <MDBBtn type="submit">Add New Hero</MDBBtn>
+        <MDBBtn type="submit">Edit Hero</MDBBtn>
       </form>
     </div>
   );
 };
 
-export default addNewHero;
+export async function getServerSideProps({ params }) {
+  const id = params.id;
+  const res = await axios(`http://localhost:3000/api/hero/${id}`);
+  // console.log(res.data.hero);
+  const { hero } = res.data;
+  return {
+    props: { heros: hero },
+  };
+}
+
+export default EditHero;
